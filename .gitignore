@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+
+web/node_modules/
+web/dist/
+
+data/*.db
+data/staging/*.json
+data/approved/*.json
+data/rejected/*.json
+data/graph.kuzu

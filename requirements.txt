@@ -1,0 +1,9 @@
+beautifulsoup4>=4.12
+fastapi>=0.115
+kuzu>=0.6
+pypdf>=4.2
+spacy>=3.8
+sumy>=0.11
+trafilatura>=1.9
+typer>=0.12
+uvicorn>=0.30
