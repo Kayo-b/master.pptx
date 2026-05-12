@@ -23,14 +23,34 @@ body {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  height: 100vh;
-  overflow-y: auto;
+  height: 100%;
+  overflow-y: scroll;
   overflow-x: hidden;
   padding: 16px;
   background: #090b11;
   border-right: 1px solid #161b26;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #090b11;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #090b11;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 999px;
+  border: 3px solid #090b11;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
 
 .content {
@@ -265,12 +285,6 @@ body {
 .relation-item--active {
   border-color: #f59e0b;
   background: #1f2937;
-}
-
-.relation-list--scroll {
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 8px;
 }
 
 .legend-list {

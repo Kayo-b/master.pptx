@@ -9,6 +9,7 @@ import { describeEdge, edgeKey, edgeShortLabel, nodeLabel, normalizeForSearch } 
 
 const ALL_CONFIDENCES = ['confirmado', 'investigado', 'especulado'];
 const ALL_NODE_TYPES = ['Pessoa', 'Organizacao', 'Orgao', 'Partido', 'Evento', 'InstrumentoFinanceiro', 'Bem'];
+const CORE_TERMS = ['master', 'vorcaro'];
 
 function edgeMatches(edge, confidences) {
   return confidences.has(edge.confianca);
@@ -31,6 +32,44 @@ function neighborhood(graph, nodeId, degree) {
       if (!visited.has(neighbor)) {
         visited.add(neighbor);
         queue.push({ id: neighbor, depth: current.depth + 1 });
+      }
+    });
+  }
+  return {
+    nodes: graph.nodes.filter((node) => visited.has(node.id)),
+    edges: graph.edges.filter((edge) => visited.has(edge.origem_id) && visited.has(edge.destino_id))
+  };
+}
+
+function coreSeedIds(graph) {
+  return graph.nodes
+    .filter((node) => {
+      const searchable = normalizeForSearch(`${node.id} ${nodeLabel(node)}`);
+      return CORE_TERMS.some((term) => searchable.includes(term));
+    })
+    .map((node) => node.id);
+}
+
+function connectedToCore(graph) {
+  const seeds = coreSeedIds(graph);
+  if (!seeds.length) {
+    return { nodes: [], edges: [] };
+  }
+  const adjacency = new Map();
+  graph.edges.forEach((edge) => {
+    if (!adjacency.has(edge.origem_id)) adjacency.set(edge.origem_id, new Set());
+    if (!adjacency.has(edge.destino_id)) adjacency.set(edge.destino_id, new Set());
+    adjacency.get(edge.origem_id).add(edge.destino_id);
+    adjacency.get(edge.destino_id).add(edge.origem_id);
+  });
+  const visited = new Set(seeds);
+  const queue = [...seeds];
+  while (queue.length) {
+    const current = queue.shift();
+    (adjacency.get(current) || []).forEach((neighbor) => {
+      if (!visited.has(neighbor)) {
+        visited.add(neighbor);
+        queue.push(neighbor);
       }
     });
   }
@@ -146,7 +185,8 @@ export default function App() {
     confidences: new Set(ALL_CONFIDENCES),
     nodeTypes: new Set(ALL_NODE_TYPES),
     degree: 1,
-    showEdgeLabels: true
+    showEdgeLabels: true,
+    hideDisconnectedFromCore: false
   });
 
   useEffect(() => {
@@ -191,11 +231,14 @@ export default function App() {
       nodes: filteredGraph.nodes,
       edges: [...filteredGraph.edges, ...indirectRelations]
     };
+    const graphInScope = filters.hideDisconnectedFromCore ? connectedToCore(graphWithIndirect) : graphWithIndirect;
     if (!selectedNode) {
-      return graphWithIndirect;
+      return graphInScope;
     }
-    return neighborhood(graphWithIndirect, selectedNode.id, filters.degree);
-  }, [filteredGraph, filters.degree, indirectRelations, selectedNode]);
+    return neighborhood(graphInScope, selectedNode.id, filters.degree);
+  }, [filteredGraph, filters.degree, filters.hideDisconnectedFromCore, indirectRelations, selectedNode]);
+  const visibleNodeIds = useMemo(() => new Set(displayGraph.nodes.map((node) => node.id)), [displayGraph.nodes]);
+  const visibleEdgeKeys = useMemo(() => new Set(displayGraph.edges.map((edge) => edgeKey(edge))), [displayGraph.edges]);
   const normalizedSearch = useMemo(() => normalizeForSearch(searchQuery.trim()), [searchQuery]);
   const searchMatches = useMemo(() => {
     if (!normalizedSearch) {
@@ -243,6 +286,19 @@ export default function App() {
     };
   }, [indirectRelations, nodeDetail]);
 
+  useEffect(() => {
+    if (selectedNode && !visibleNodeIds.has(selectedNode.id)) {
+      setSelectedNode(null);
+      setNodeDetail(null);
+    }
+  }, [selectedNode, visibleNodeIds]);
+
+  useEffect(() => {
+    if (selectedEdge && !visibleEdgeKeys.has(edgeKey(selectedEdge))) {
+      setSelectedEdge(null);
+    }
+  }, [selectedEdge, visibleEdgeKeys]);
+
   function clearGraphFocus() {
     setSelectedNode(null);
     setSelectedEdge(null);
@@ -289,6 +345,10 @@ export default function App() {
                 <span className="graph-pill">
                   {displayGraph.nodes.length} nós / {displayGraph.edges.length} arestas
                 </span>
+                {filters.hideDisconnectedFromCore ? (
+                  <span className="graph-pill">Apenas componente conectado ao core Master/Vorcaro</span>
+                ) : null}
+                <span className="graph-pill">Shift + arrastar: selecionar e mover vários nós</span>
                 {normalizedSearch ? (
                   <span className="graph-pill">
                     Busca: {searchMatches.nodes} nós / {searchMatches.edges} arestas

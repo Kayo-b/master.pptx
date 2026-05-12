@@ -8,7 +8,7 @@ const CONFIDENCE_LABELS = {
 
 export default function SourceList({ edge, nodesById }) {
   return (
-    <details className="panel collapsible-panel" open>
+    <details className="panel collapsible-panel selected-edge-panel" open>
       <summary className="panel-summary">
         <span>Aresta selecionada</span>
       </summary>
@@ -20,7 +20,7 @@ export default function SourceList({ edge, nodesById }) {
             <p><strong>{describeEdge(edge, nodesById)}</strong></p>
             <p>Confiança: {CONFIDENCE_LABELS[edge.confianca] || edge.confianca}</p>
             <h3>Fontes</h3>
-            <ul className="relation-list relation-list--scroll">
+            <ul className="relation-list">
               {(edge.fontes || []).map((source) => (
                 <li key={source.id}>
                   <a href={source.url} target="_blank" rel="noreferrer">

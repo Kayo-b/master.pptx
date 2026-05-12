@@ -18,7 +18,8 @@ const FILTER_HELP = {
   confidences: 'Mostra o nível de certeza atribuído a cada aresta: confirmado, investigado ou especulado.',
   nodeTypes: 'Exibe apenas os tipos de entidade marcados nesta lista.',
   degree: 'Quando há um nó em foco, controla quantos saltos de distância aparecem no grafo.',
-  edgeLabels: 'Mostra ou esconde os nomes curtos das arestas para reduzir poluição visual.'
+  edgeLabels: 'Mostra ou esconde os nomes curtos das arestas para reduzir poluição visual.',
+  masterCore: 'Esconde grupos soltos e mantém apenas nós e arestas conectados, em qualquer grau, ao núcleo Master/Vorcaro.'
 };
 
 function toggleInSet(set, value) {
@@ -73,6 +74,22 @@ export default function Filters({ filters, setFilters }) {
               {NODE_TYPE_LABELS[value] || value}
             </label>
           ))}
+        </div>
+        <div className="filter-group">
+          <h3>Core do caso <span className="hint-badge" title={FILTER_HELP.masterCore}>?</span></h3>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={filters.hideDisconnectedFromCore}
+              onChange={() =>
+                setFilters((current) => ({
+                  ...current,
+                  hideDisconnectedFromCore: !current.hideDisconnectedFromCore
+                }))
+              }
+            />
+            Esconder grupos fora do core Master/Vorcaro
+          </label>
         </div>
         <div className="filter-group">
           <h3>Grau <span className="hint-badge" title={FILTER_HELP.degree}>?</span></h3>

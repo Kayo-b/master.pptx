@@ -27,6 +27,7 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python -m spacy download pt_core_news_lg
+export ANTHROPIC_API_KEY=... # obrigatório para extrair nós/arestas automaticamente
 ```
 
 ## Running locally
@@ -38,6 +39,7 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python -m spacy download pt_core_news_lg
+export ANTHROPIC_API_KEY=...
 ```
 
 ### 2. Use the CLI to generate and review staging files
@@ -88,9 +90,10 @@ cd web && npm run build
    - `numero_nota`
    - `referencia_correspondente`
    - `claim_estruturada` derivada deterministicamente do trecho
-3. O comando gera um JSON em `data/staging/`.
-4. O operador completa ou corrige manualmente `nos`, `arestas` e `fontes`.
-5. `approve` valida o payload, persiste fontes em SQLite e grafo em Kuzu, e move o arquivo para `data/approved/`.
+3. A etapa `llm` usa `texto_resumido`, entidades e fontes candidatas para preencher automaticamente `nos`, `arestas` e uma selecao inicial de `fontes`.
+4. O comando gera um JSON em `data/staging/`.
+5. O operador revisa principalmente a selecao de `fontes`/`fonte_ids`, corrigindo eventuais associacoes antes da aprovacao.
+6. `approve` valida o payload, persiste fontes em SQLite e grafo em Kuzu, e move o arquivo para `data/approved/`.
 
 ## Comandos
 
@@ -109,9 +112,11 @@ uvicorn api.main:app --reload
 ## Observacoes
 
 - `approve` exige que toda aresta tenha ao menos um `fonte_id` valido.
+- `ingest` falha explicitamente se `ANTHROPIC_API_KEY` nao estiver configurada.
 - O banco Kuzu e criado como arquivo local em `data/graph.kuzu`.
 - No staging manual, use `tipo_no` para o tipo do no e `tipo_relacao` para o tipo da aresta quando houver ambiguidade com o campo `tipo` do proprio schema.
 - `fontes` dentro do staging podem ser persistidas junto com a aprovacao, desde que tenham `id` explicito quando forem referenciadas por arestas.
 - `fontes_sugeridas` servem apenas como apoio para a curadoria humana.
 - `referencias_wikipedia_vinculadas` conecta cada nota da Wikipedia ao trecho exato do artigo e a uma claim estruturada, para reduzir associacoes manuais incorretas entre arestas e fontes.
 - O frontend em `web/` consome a API local e usa Cytoscape para visualizacao.
+- Os filtros da UI incluem uma opcao para esconder componentes desconectados do nucleo Master/Vorcaro.

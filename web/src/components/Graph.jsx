@@ -83,8 +83,17 @@ export default function Graph({
       key={graphKey}
       elements={elements}
       layout={layout}
+      boxSelectionEnabled
       style={{ width: '100%', height: '100%', background: '#05060a' }}
       stylesheet={[
+        {
+          selector: 'core',
+          style: {
+            'selection-box-color': '#38bdf8',
+            'selection-box-border-color': '#7dd3fc',
+            'selection-box-opacity': 0.18
+          }
+        },
         {
           selector: 'node',
           style: {
@@ -120,6 +129,18 @@ export default function Graph({
           }
         },
         {
+          selector: 'node:selected',
+          style: {
+            'border-width': 4,
+            'border-color': '#38bdf8',
+            'overlay-opacity': 0,
+            width: 30,
+            height: 30,
+            'font-size': 10,
+            'z-index': 25
+          }
+        },
+        {
           selector: 'edge',
           style: {
             label: showEdgeLabels ? 'data(labelShort)' : '',
@@ -152,12 +173,24 @@ export default function Graph({
           style: {
             opacity: 0.15
           }
+        },
+        {
+          selector: 'edge:selected',
+          style: {
+            width: 4,
+            'line-color': '#38bdf8',
+            'target-arrow-color': '#38bdf8',
+            opacity: 1,
+            'z-index': 20
+          }
         }
       ]}
       cy={(cy) => {
+        cy.boxSelectionEnabled(true);
         cy.off('tap');
         cy.on('tap', (event) => {
           if (event.target === cy) {
+            cy.elements(':selected').unselect();
             onClearSelection();
           }
         });

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,6 +12,9 @@ SOURCES_DB_PATH = DATA_DIR / "sources.db"
 STAGING_DIR = DATA_DIR / "staging"
 APPROVED_DIR = DATA_DIR / "approved"
 REJECTED_DIR = DATA_DIR / "rejected"
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-latest")
+ANTHROPIC_API_URL = os.getenv("ANTHROPIC_API_URL", "https://api.anthropic.com/v1/messages")
 
 
 def ensure_runtime_dirs() -> None:

@@ -9,6 +9,7 @@ from core.config import STAGING_DIR, next_staging_path
 from core.models import dumps_pretty, validate_staging_payload
 from pipeline.cleaner import clean_input
 from pipeline.extractor import extract_insights
+from pipeline.llm import extract_graph_with_llm
 from pipeline.wikipedia import extract_wikipedia_evidence
 
 
@@ -25,6 +26,14 @@ def build_staging_document(url: str | None = None, file_path: str | None = None)
     wikipedia_evidence = extract_wikipedia_evidence(url) if _is_wikipedia_url(url) else {}
     sources_suggested = wikipedia_evidence.get("fontes_sugeridas", [])
     linked_references = wikipedia_evidence.get("referencias_vinculadas", [])
+    llm_graph = extract_graph_with_llm(
+        source=cleaned.source,
+        source_kind=cleaned.source_kind,
+        summary_text=insights["texto_resumido"],
+        entities=insights["entidades"],
+        linked_references=linked_references,
+        suggested_sources=sources_suggested,
+    )
     payload = {
         "metadata": {
             "origem": cleaned.source,
@@ -32,14 +41,18 @@ def build_staging_document(url: str | None = None, file_path: str | None = None)
             "referencias_wikipedia_extraidas": len(sources_suggested),
             "referencias_wikipedia_vinculadas": len(linked_references),
             "metodos_extracao": insights.get("metodos", {}),
+            "extracao_grafo": {
+                "modelo": "anthropic",
+                "status": "concluida",
+            },
         },
         "texto_limpo": cleaned.text,
         "texto_resumido": insights["texto_resumido"],
         "entidades": insights["entidades"],
         "frases_relevantes": insights["frases_relevantes"],
-        "nos": [],
-        "arestas": [],
-        "fontes": [],
+        "nos": llm_graph["nos"],
+        "arestas": llm_graph["arestas"],
+        "fontes": llm_graph["fontes"],
         "fontes_sugeridas": sources_suggested,
         "referencias_wikipedia_vinculadas": linked_references,
     }

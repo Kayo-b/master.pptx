@@ -56,6 +56,28 @@ class ModelsTestCase(unittest.TestCase):
                 }
             )
 
+    def test_validate_staging_payload_rejects_edge_with_wrong_endpoint_types(self) -> None:
+        with self.assertRaises(ValidationError):
+            validate_staging_payload(
+                {
+                    "nos": [
+                        {"tipo_no": "Organizacao", "id": "org_master", "nome": "Banco Master", "tipo": "banco"},
+                        {"tipo_no": "Pessoa", "id": "pessoa_daniel_vorcaro", "nome": "Daniel Vorcaro"},
+                    ],
+                    "arestas": [
+                        {
+                            "tipo_relacao": "CONTROLA",
+                            "origem_id": "org_master",
+                            "destino_id": "pessoa_daniel_vorcaro",
+                            "desde": "2019",
+                            "confianca": "confirmado",
+                            "fonte_ids": ["f001"],
+                        }
+                    ],
+                    "fontes": [{"id": "f001", "url": "https://example.com", "tipo": "artigo"}],
+                }
+            )
+
     def test_validate_staging_payload_accepts_linked_wikipedia_references(self) -> None:
         payload = validate_staging_payload(
             {

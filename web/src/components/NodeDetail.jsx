@@ -21,7 +21,7 @@ export default function NodeDetail({ node, nodesById, selectedEdgeKey, onSelectR
             <p>Tipo: {node.tipo_no}</p>
             {node.descricao ? <p>{node.descricao}</p> : null}
             <h3>Relações</h3>
-            <ul className="relation-list relation-list--scroll">
+            <ul className="relation-list">
               {node.relacoes?.map((relation) => (
                 <li key={edgeKey(relation)}>
                   <button

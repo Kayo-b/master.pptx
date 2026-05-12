@@ -189,11 +189,23 @@ def validate_staging_payload(payload: dict[str, Any]) -> dict[str, Any]:
         for reference in normalized["referencias_wikipedia_vinculadas"]
     ]
     node_ids = {node["id"] for node in normalized["nos"]}
+    node_types = {node["id"]: node["tipo_no"] for node in normalized["nos"]}
     for edge in normalized["arestas"]:
         if edge["origem_id"] not in node_ids:
             raise ValidationError(f"Aresta {edge['tipo_relacao']} referencia origem inexistente: {edge['origem_id']}.")
         if edge["destino_id"] not in node_ids:
             raise ValidationError(f"Aresta {edge['tipo_relacao']} referencia destino inexistente: {edge['destino_id']}.")
+        relation_schema = RELATION_SCHEMAS[edge["tipo_relacao"]]
+        if node_types[edge["origem_id"]] != relation_schema.source_type:
+            raise ValidationError(
+                f"Aresta {edge['tipo_relacao']} exige origem {relation_schema.source_type}, "
+                f"mas recebeu {node_types[edge['origem_id']]}."
+            )
+        if node_types[edge["destino_id"]] != relation_schema.target_type:
+            raise ValidationError(
+                f"Aresta {edge['tipo_relacao']} exige destino {relation_schema.target_type}, "
+                f"mas recebeu {node_types[edge['destino_id']]}."
+            )
     return normalized
 
 
