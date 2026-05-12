@@ -358,7 +358,19 @@ a:hover {
   color: #bae6fd;
 }
 
+
 @media (max-width: 1024px) {
+  .graph-overlay--left {
+    top: 0px;
+    width: 250px; 
+  }
+  .graph-overlay--right {
+    top: 0px;
+    width: 250px;
+  }
+}
+
+@media (max-width: 524px) {
   .layout {
     grid-template-columns: 1fr;
   }
@@ -380,5 +392,22 @@ a:hover {
 
   .graph-search__input {
     width: 100%;
+  }
+
+  .graph-overlay--left {
+    top: 0px;
+    width: 200px; 
+  }
+  .graph-overlay--right {
+    top: 0px;
+    width: 200px;
+  } /* .graph-overlay--right{
+    top: 35px
+  }.graph-overlay--left,
+  .graph-overlay--right {
+    width: calc(100% - 24px);
+  } */
+  .panel-summary {
+    padding: 6px;
   }
 }
