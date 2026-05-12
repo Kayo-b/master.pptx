@@ -381,9 +381,4 @@ a:hover {
   .graph-search__input {
     width: 100%;
   }
-
-  .graph-overlay--left,
-  .graph-overlay--right {
-    width: calc(100% - 24px);
-  }
 }
