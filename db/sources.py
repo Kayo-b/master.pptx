@@ -71,6 +71,12 @@ class SourceStore:
             row = connection.execute("SELECT * FROM fontes WHERE id = ?", (source_id,)).fetchone()
         return dict(row) if row else None
 
+    def get_source_by_url(self, url: str) -> dict | None:
+        self.init_db()
+        with self._connect() as connection:
+            row = connection.execute("SELECT * FROM fontes WHERE url = ?", (url,)).fetchone()
+        return dict(row) if row else None
+
     def ensure_source_ids_exist(self, source_ids: Iterable[str]) -> list[str]:
         ids = sorted(set(source_ids))
         if not ids:

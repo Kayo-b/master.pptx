@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { EDGE_CONFIDENCE_STYLES, NODE_COLORS, edgeArrowShape, edgeColor, edgeKey, edgeShortLabel } from '../graphLabels.js';
+import { resolveMediaUrl } from '../api.js';
 
 function toElements(graph, highlightedNodeIds, highlightedEdgeKeys, hasSearch, positions) {
   const nodes = graph.nodes.map((node) => ({
@@ -12,7 +13,9 @@ function toElements(graph, highlightedNodeIds, highlightedEdgeKeys, hasSearch, p
       id: node.id,
       label: node.nome || node.descricao || node.id,
       tipo: node.tipo_no,
-      color: NODE_COLORS[node.tipo_no] || '#34495E'
+      color: NODE_COLORS[node.tipo_no] || '#34495E',
+      imageUrl: resolveMediaUrl(node.imagem_url || ''),
+      hasImage: node.imagem_url ? 'true' : 'false'
     }
   }));
   const edges = graph.edges.map((edge) => ({
@@ -98,16 +101,38 @@ export default function Graph({
           selector: 'node',
           style: {
             label: 'data(label)',
+            shape: 'ellipse',
             'background-color': 'data(color)',
+            'background-image': 'none',
             color: '#e5eef9',
             width: 24,
             height: 24,
+            'border-width': 2,
+            'border-color': '#05060a',
             'font-size': 9,
             'text-wrap': 'wrap',
             'text-max-width': 120,
             'text-margin-y': -16,
             'text-outline-width': 1,
             'text-outline-color': '#05060a'
+          }
+        },
+        {
+          selector: 'node[hasImage = "true"]',
+          style: {
+            'background-image': 'data(imageUrl)',
+            'background-fit': 'cover',
+            'background-clip': 'node',
+            'background-width': '100%',
+            'background-height': '100%',
+            'background-position-x': '50%',
+            'background-position-y': '50%',
+            'border-width': 3,
+            'border-color': 'data(color)',
+            width: 42,
+            height: 42,
+            'font-size': 10,
+            'text-margin-y': -25
           }
         },
         {

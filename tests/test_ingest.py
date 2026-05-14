@@ -7,16 +7,16 @@ from pipeline.ingest import build_staging_document
 
 
 class IngestPipelineTestCase(unittest.TestCase):
-    @patch("pipeline.ingest.extract_graph_with_llm")
+    @patch("pipeline.ingest.extract_image_suggestions")
     @patch("pipeline.ingest.extract_wikipedia_evidence")
     @patch("pipeline.ingest.extract_insights")
     @patch("pipeline.ingest.clean_input")
-    def test_build_staging_document_populates_graph_from_llm(
+    def test_build_staging_document_creates_manual_staging_without_llm(
         self,
         clean_input_mock,
         extract_insights_mock,
         extract_wikipedia_evidence_mock,
-        extract_graph_with_llm_mock,
+        extract_image_suggestions_mock,
     ) -> None:
         clean_input_mock.return_value = type(
             "CleanedDocument",
@@ -37,30 +37,21 @@ class IngestPipelineTestCase(unittest.TestCase):
             "fontes_sugeridas": [{"id": "f001", "url": "https://example.com/fonte", "tipo": "artigo"}],
             "referencias_vinculadas": [],
         }
-        extract_graph_with_llm_mock.return_value = {
-            "nos": [
-                {"tipo_no": "Pessoa", "id": "pessoa_daniel_vorcaro", "nome": "Daniel Vorcaro"},
-                {"tipo_no": "Organizacao", "id": "org_banco_master", "nome": "Banco Master", "tipo": "banco"},
-            ],
-            "arestas": [
-                {
-                    "tipo_relacao": "CONTROLA",
-                    "origem_id": "pessoa_daniel_vorcaro",
-                    "destino_id": "org_banco_master",
-                    "desde": "2019",
-                    "confianca": "confirmado",
-                    "fonte_ids": ["f001"],
-                }
-            ],
-            "fontes": [{"id": "f001", "url": "https://example.com/fonte", "tipo": "artigo"}],
+        extract_image_suggestions_mock.return_value = {
+            "imagens_sugeridas": [{"entidade": "Daniel Vorcaro", "imagem_url": "/assets/images/daniel.jpg"}],
+            "erros": [],
         }
 
         payload = build_staging_document(url="https://pt.wikipedia.org/wiki/Escândalo_do_Banco_Master")
 
-        self.assertEqual(len(payload["nos"]), 2)
-        self.assertEqual(payload["arestas"][0]["tipo_relacao"], "CONTROLA")
-        self.assertEqual(payload["fontes"][0]["id"], "f001")
-        self.assertEqual(payload["metadata"]["extracao_grafo"]["status"], "concluida")
+        self.assertEqual(payload["nos"], [])
+        self.assertEqual(payload["arestas"], [])
+        self.assertEqual(payload["fontes"][0]["url"], "https://example.com/master")
+        self.assertEqual(payload["fontes_sugeridas"][0]["id"], "f001")
+        self.assertEqual(payload["metadata"]["extracao_grafo"]["status"], "pendente")
+        self.assertEqual(payload["metadata"]["extracao_grafo"]["modelo"], "manual_via_copilot_cli")
+        self.assertEqual(payload["metadata"]["imagens_extraidas"], 1)
+        self.assertEqual(payload["metadata"]["imagens_sugeridas"][0]["entidade"], "Daniel Vorcaro")
 
 
 if __name__ == "__main__":

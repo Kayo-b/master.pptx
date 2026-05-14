@@ -19,3 +19,14 @@ export function fetchNode(nodeId) {
 export function fetchNeighbors(nodeId, grau = 1) {
   return request(`/graph/node/${nodeId}/neighbors?grau=${grau}`);
 }
+
+export function resolveMediaUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  if (url.startsWith('/')) {
+    return `${API_BASE_URL}${url}`;
+  }
+  return url;
+}

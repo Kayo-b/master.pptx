@@ -5,10 +5,14 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
+from core.config import ASSETS_DIR, ensure_runtime_dirs
 from db.graph import GraphStore
 from db.sources import SourceStore
 
+
+ensure_runtime_dirs()
 
 app = FastAPI(title="Grafo de Investigacao Brasileira", version="0.1.0")
 app.add_middleware(
@@ -18,6 +22,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
 
 graph_store = GraphStore()
 source_store = SourceStore()

@@ -7,6 +7,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "data"
+ASSETS_DIR = DATA_DIR / "assets"
+IMAGE_DIR = ASSETS_DIR / "images"
 GRAPH_DB_PATH = DATA_DIR / "graph.kuzu"
 SOURCES_DB_PATH = DATA_DIR / "sources.db"
 STAGING_DIR = DATA_DIR / "staging"
@@ -18,7 +20,7 @@ ANTHROPIC_API_URL = os.getenv("ANTHROPIC_API_URL", "https://api.anthropic.com/v1
 
 
 def ensure_runtime_dirs() -> None:
-    for path in (DATA_DIR, STAGING_DIR, APPROVED_DIR, REJECTED_DIR):
+    for path in (DATA_DIR, ASSETS_DIR, IMAGE_DIR, STAGING_DIR, APPROVED_DIR, REJECTED_DIR):
         path.mkdir(parents=True, exist_ok=True)
 
 

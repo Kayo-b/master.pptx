@@ -1,5 +1,6 @@
 beautifulsoup4>=4.12
 fastapi>=0.115
+googlenewsdecoder>=0.1.7
 kuzu>=0.6
 pypdf>=4.2
 spacy>=3.8

@@ -39,6 +39,10 @@ def _build_primary_source(source: str, source_kind: str) -> dict[str, Any]:
     )
 
 
+def build_primary_source(source: str, source_kind: str) -> dict[str, Any]:
+    return _build_primary_source(source, source_kind)
+
+
 def _build_candidate_sources(
     origin_source: str,
     source_kind: str,

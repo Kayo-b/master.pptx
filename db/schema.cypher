@@ -4,6 +4,7 @@ CREATE NODE TABLE Pessoa (
   apelido STRING,
   cargo_atual STRING,
   descricao STRING,
+  imagem_url STRING,
   PRIMARY KEY(id)
 );
 
@@ -13,6 +14,7 @@ CREATE NODE TABLE Organizacao (
   tipo STRING,
   cnpj STRING,
   descricao STRING,
+  imagem_url STRING,
   PRIMARY KEY(id)
 );
 
@@ -22,6 +24,7 @@ CREATE NODE TABLE Orgao (
   sigla STRING,
   tipo STRING,
   descricao STRING,
+  imagem_url STRING,
   PRIMARY KEY(id)
 );
 
@@ -29,6 +32,7 @@ CREATE NODE TABLE Partido (
   id STRING,
   nome STRING,
   sigla STRING,
+  imagem_url STRING,
   PRIMARY KEY(id)
 );
 
@@ -39,6 +43,7 @@ CREATE NODE TABLE Evento (
   data_inicio STRING,
   data_fim STRING,
   descricao STRING,
+  imagem_url STRING,
   PRIMARY KEY(id)
 );
 
@@ -48,6 +53,7 @@ CREATE NODE TABLE InstrumentoFinanceiro (
   valor STRING,
   descricao STRING,
   status STRING,
+  imagem_url STRING,
   PRIMARY KEY(id)
 );
 
@@ -57,6 +63,7 @@ CREATE NODE TABLE Bem (
   descricao STRING,
   valor_estimado STRING,
   localizacao STRING,
+  imagem_url STRING,
   PRIMARY KEY(id)
 );
 

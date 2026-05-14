@@ -8,6 +8,7 @@ from core.config import GRAPH_DB_PATH, REPO_ROOT, ensure_runtime_dirs
 from core.models import validate_staging_payload
 from core.schema import NODE_SCHEMAS, RELATION_SCHEMAS
 from db.sources import SourceStore
+from pipeline.images import apply_suggested_images_to_nodes
 
 
 class GraphStore:
@@ -44,12 +45,27 @@ class GraphStore:
     def init_db(self) -> None:
         already_exists = self._prepare_db_path()
         if already_exists:
+            self._ensure_node_properties()
             return
         schema_path = REPO_ROOT / "db" / "schema.cypher"
         statements = [statement.strip() for statement in schema_path.read_text(encoding="utf-8").split(";") if statement.strip()]
         connection = self._connect()
         for statement in statements:
             connection.execute(statement)
+        self._ensure_node_properties()
+
+    def _ensure_node_properties(self) -> None:
+        connection = self._connect()
+        for node_type, schema in NODE_SCHEMAS.items():
+            for field in schema.fields:
+                if field == "id":
+                    continue
+                try:
+                    connection.execute(f"ALTER TABLE {node_type} ADD {field} STRING")
+                except RuntimeError as exc:
+                    if "already has property" in str(exc):
+                        continue
+                    raise
 
     def _fetch_rows(self, query: str, parameters: dict[str, Any] | None = None) -> list[list[Any]]:
         self.init_db()
@@ -129,6 +145,7 @@ class GraphStore:
     def approve_payload(self, payload: dict[str, Any], source_store: SourceStore | None = None) -> dict[str, Any]:
         source_store = source_store or SourceStore()
         normalized = validate_staging_payload(payload)
+        normalized = apply_suggested_images_to_nodes(normalized)
         source_store.import_sources(normalized["fontes"])
         referenced_ids = {source_id for edge in normalized["arestas"] for source_id in edge["fonte_ids"]}
         missing_ids = source_store.ensure_source_ids_exist(referenced_ids)

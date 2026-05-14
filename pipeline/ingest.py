@@ -9,7 +9,8 @@ from core.config import STAGING_DIR, next_staging_path
 from core.models import dumps_pretty, validate_staging_payload
 from pipeline.cleaner import clean_input
 from pipeline.extractor import extract_insights
-from pipeline.llm import extract_graph_with_llm
+from pipeline.images import extract_image_suggestions
+from pipeline.llm import build_primary_source
 from pipeline.wikipedia import extract_wikipedia_evidence
 
 
@@ -26,14 +27,13 @@ def build_staging_document(url: str | None = None, file_path: str | None = None)
     wikipedia_evidence = extract_wikipedia_evidence(url) if _is_wikipedia_url(url) else {}
     sources_suggested = wikipedia_evidence.get("fontes_sugeridas", [])
     linked_references = wikipedia_evidence.get("referencias_vinculadas", [])
-    llm_graph = extract_graph_with_llm(
+    image_data = extract_image_suggestions(
         source=cleaned.source,
         source_kind=cleaned.source_kind,
-        summary_text=insights["texto_resumido"],
+        raw_html=getattr(cleaned, "raw_html", None),
         entities=insights["entidades"],
-        linked_references=linked_references,
-        suggested_sources=sources_suggested,
     )
+    primary_source = build_primary_source(cleaned.source, cleaned.source_kind)
     payload = {
         "metadata": {
             "origem": cleaned.source,
@@ -41,18 +41,21 @@ def build_staging_document(url: str | None = None, file_path: str | None = None)
             "referencias_wikipedia_extraidas": len(sources_suggested),
             "referencias_wikipedia_vinculadas": len(linked_references),
             "metodos_extracao": insights.get("metodos", {}),
+            "imagens_sugeridas": image_data["imagens_sugeridas"],
+            "imagens_erros": image_data["erros"],
+            "imagens_extraidas": len(image_data["imagens_sugeridas"]),
             "extracao_grafo": {
-                "modelo": "anthropic",
-                "status": "concluida",
+                "modelo": "manual_via_copilot_cli",
+                "status": "pendente",
             },
         },
         "texto_limpo": cleaned.text,
         "texto_resumido": insights["texto_resumido"],
         "entidades": insights["entidades"],
         "frases_relevantes": insights["frases_relevantes"],
-        "nos": llm_graph["nos"],
-        "arestas": llm_graph["arestas"],
-        "fontes": llm_graph["fontes"],
+        "nos": [],
+        "arestas": [],
+        "fontes": [primary_source],
         "fontes_sugeridas": sources_suggested,
         "referencias_wikipedia_vinculadas": linked_references,
     }

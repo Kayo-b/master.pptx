@@ -34,38 +34,38 @@ NODE_ID_PREFIXES = {
 
 NODE_SCHEMAS: dict[str, NodeSchema] = {
     "Pessoa": NodeSchema(
-        fields=("id", "nome", "apelido", "cargo_atual", "descricao"),
+        fields=("id", "nome", "apelido", "cargo_atual", "descricao", "imagem_url"),
         required=("nome",),
         enum_fields={},
     ),
     "Organizacao": NodeSchema(
-        fields=("id", "nome", "tipo", "cnpj", "descricao"),
+        fields=("id", "nome", "tipo", "cnpj", "descricao", "imagem_url"),
         required=("nome",),
         enum_fields={
             "tipo": ("banco", "empresa", "escritorio_advocacia", "fundo", "corretora", "ong"),
         },
     ),
     "Orgao": NodeSchema(
-        fields=("id", "nome", "sigla", "tipo", "descricao"),
+        fields=("id", "nome", "sigla", "tipo", "descricao", "imagem_url"),
         required=("nome",),
         enum_fields={
             "tipo": ("regulador", "judiciario", "policial", "ministerio", "legislativo"),
         },
     ),
     "Partido": NodeSchema(
-        fields=("id", "nome", "sigla"),
+        fields=("id", "nome", "sigla", "imagem_url"),
         required=("nome",),
         enum_fields={},
     ),
     "Evento": NodeSchema(
-        fields=("id", "nome", "tipo", "data_inicio", "data_fim", "descricao"),
+        fields=("id", "nome", "tipo", "data_inicio", "data_fim", "descricao", "imagem_url"),
         required=("nome",),
         enum_fields={
             "tipo": ("operacao_policial", "cpi", "julgamento", "delacao", "reuniao", "contrato"),
         },
     ),
     "InstrumentoFinanceiro": NodeSchema(
-        fields=("id", "tipo", "valor", "descricao", "status"),
+        fields=("id", "tipo", "valor", "descricao", "status", "imagem_url"),
         required=("tipo",),
         enum_fields={
             "tipo": ("CDB", "carteira_credito", "precatorio", "titulo", "fundo"),
@@ -73,7 +73,7 @@ NODE_SCHEMAS: dict[str, NodeSchema] = {
         },
     ),
     "Bem": NodeSchema(
-        fields=("id", "tipo", "descricao", "valor_estimado", "localizacao"),
+        fields=("id", "tipo", "descricao", "valor_estimado", "localizacao", "imagem_url"),
         required=("tipo",),
         enum_fields={
             "tipo": ("imovel", "aeronave", "veiculo", "resort", "empresa_offshore"),

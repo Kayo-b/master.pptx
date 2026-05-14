@@ -1,4 +1,5 @@
 import { describeRelation, edgeKey } from '../graphLabels.js';
+import { resolveMediaUrl } from '../api.js';
 
 const CONFIDENCE_LABELS = {
   confirmado: 'Confirmado',
@@ -17,6 +18,13 @@ export default function NodeDetail({ node, nodesById, selectedEdgeKey, onSelectR
           <p>Selecione um nó no grafo.</p>
         ) : (
           <>
+            {node.imagem_url ? (
+              <img
+                src={resolveMediaUrl(node.imagem_url)}
+                alt={node.nome || node.id}
+                className="node-detail-image"
+              />
+            ) : null}
             <p><strong>{node.nome || node.id}</strong></p>
             <p>Tipo: {node.tipo_no}</p>
             {node.descricao ? <p>{node.descricao}</p> : null}

@@ -17,6 +17,7 @@ class SourceStoreTestCase(unittest.TestCase):
             self.assertEqual(len(store.list_sources()), 2)
             self.assertEqual(store.ensure_source_ids_exist(["f001", "f003"]), ["f003"])
             self.assertEqual(store.get_source(second["id"])["url"], "https://example.com/b")
+            self.assertEqual(store.get_source_by_url("https://example.com/a")["id"], "f001")
 
 
 if __name__ == "__main__":

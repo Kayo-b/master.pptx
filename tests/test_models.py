@@ -106,6 +106,23 @@ class ModelsTestCase(unittest.TestCase):
         self.assertEqual(payload["referencias_wikipedia_vinculadas"][0]["numero_nota"], "60")
         self.assertEqual(payload["referencias_wikipedia_vinculadas"][0]["fonte_sugerida_id"], "wikipedia_ref_60")
 
+    def test_validate_staging_payload_accepts_node_image_url(self) -> None:
+        payload = validate_staging_payload(
+            {
+                "nos": [
+                    {
+                        "tipo_no": "Pessoa",
+                        "nome": "Daniel Vorcaro",
+                        "imagem_url": "https://example.com/daniel-vorcaro.jpg",
+                    }
+                ]
+            }
+        )
+        self.assertEqual(
+            payload["nos"][0]["imagem_url"],
+            "https://example.com/daniel-vorcaro.jpg",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
