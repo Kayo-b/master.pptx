@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable
 
@@ -12,11 +13,15 @@ class SourceStore:
     def __init__(self, db_path: str | Path = SOURCES_DB_PATH) -> None:
         self.db_path = Path(db_path)
 
+    @contextmanager
     def _connect(self) -> sqlite3.Connection:
         ensure_runtime_dirs()
         connection = sqlite3.connect(self.db_path)
         connection.row_factory = sqlite3.Row
-        return connection
+        try:
+            yield connection
+        finally:
+            connection.close()
 
     def init_db(self) -> None:
         with self._connect() as connection:

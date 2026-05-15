@@ -10,6 +10,32 @@ import { describeEdge, edgeKey, edgeShortLabel, nodeLabel, normalizeForSearch } 
 const ALL_NODE_TYPES = ['Pessoa', 'Organizacao', 'Orgao', 'Partido', 'Evento', 'InstrumentoFinanceiro', 'Bem'];
 const CORE_TERMS = ['master', 'vorcaro'];
 const GRAPH_POSITIONS_STORAGE_KEY = 'master-graph-positions';
+const NODE_ALIAS_MAP = {
+  pessoa_henrique: 'pessoa_henrique_vorcaro',
+  pessoa_vorcaro: 'pessoa_henrique_vorcaro',
+  pessoa_familia_vorcaro: 'pessoa_henrique_vorcaro'
+};
+const NODE_IMAGE_OVERRIDES = {
+  evento_cpi_do_crime_organizado: '/assets/images/cpi_do_crime_organizado-8e855c0cbc.jpg',
+  evento_ligacao_de_flavio_bolsonaro_e_vorcaro_abre_crise_na_campanha_bolsonarista_balde_de_agua_fria: '/assets/images/flavio_bolsonaro_admitiu_ter_pedido_recursos_a_daniel_vorcaro_para_financiar_filme_sobre_jair_bolsonaro-e4346e322e.jpg',
+  org_agencia_mithi: '/assets/images/agencia_mithi-5dc63de95f.png',
+  org_financeira_brk: 'https://media.licdn.com/dms/image/v2/C4E0BAQGq9dkhZzKAdg/company-logo_200_200/company-logo_200_200/0/1631372732090/brickell_logo?e=2147483647&v=beta&t=srHcD-4KUgzsKSYOvRrmOpCv8_EOR-AYXu-OTQq1GcU'
+  ,org_ligga_telecom: '/assets/images/ligga_telecom-1012500196.png',
+  orgao_banco_central_do_brasil: '/assets/images/banco_central_do_brasil-24414cab39.png',
+  orgao_supremo_tribunal_federal: '/assets/images/supremo_tribunal_federal-74513af570.jpg',
+  pessoa_acm_neto: '/assets/images/acm_neto-0dbeb77cac.jpg',
+  pessoa_alexandre_de_moraes: '/assets/images/alexandre_de_moraes-8136e01e83.jpg',
+  pessoa_andreia_sadi: '/assets/images/andreia_sadi-cc0cf12d9e.jpg',
+  pessoa_anthony_garotinho: '/assets/images/anthony_garotinho-1c1b15df2c.jpg',
+  pessoa_chico_vigilante: '/assets/images/chico_vigilante-c497c8a282.jpg',
+  pessoa_guido_mantega: '/assets/images/guido_mantega-bbfcba1437.jpg',
+  pessoa_henrique_vorcaro: '/assets/images/henrique_vorcaro-e8bd51cfdc.jpg',
+  pessoa_ibaneis_rocha: '/assets/images/ibaneis_rocha-5b1a857b86.jpg',
+  pessoa_jair_bolsonaro: '/assets/images/jair_bolsonaro-04740743f4.jpg',
+  pessoa_lula_da_silva: '/assets/images/lula_da_silva-686169bde8.jpg',
+  pessoa_michel_temer: '/assets/images/michel_temer-ca397a053b.jpg',
+  pessoa_ricardo_lewandowski: '/assets/images/ricardo_lewandowski-2d925e8b4c.jpg'
+};
 
 function isValidPosition(position) {
   return (
@@ -37,7 +63,72 @@ function readStoredPositions() {
   }
 }
 
+function remapNodeId(nodeId) {
+  return NODE_ALIAS_MAP[nodeId] || nodeId;
+}
+
+function sanitizeNode(node) {
+  if (!node) {
+    return node;
+  }
+  const nextId = remapNodeId(node.id);
+  const nextNode = nextId === node.id ? { ...node } : { ...node, id: nextId, nome: 'Henrique Vorcaro' };
+  const imageOverride = NODE_IMAGE_OVERRIDES[nextNode.id];
+  if (imageOverride) {
+    nextNode.imagem_url = imageOverride;
+  }
+  return nextNode;
+}
+
+function sanitizeGraph(rawGraph) {
+  const nodesById = new Map();
+  rawGraph.nodes.forEach((node) => {
+    const nextNode = sanitizeNode(node);
+    const nextId = nextNode.id;
+    if (!nodesById.has(nextId)) {
+      nodesById.set(nextId, nextNode);
+      return;
+    }
+    const current = nodesById.get(nextId);
+    if (!current.imagem_url && nextNode.imagem_url) {
+      current.imagem_url = nextNode.imagem_url;
+    }
+    if ((!current.descricao || current.descricao === current.nome) && nextNode.descricao) {
+      current.descricao = nextNode.descricao;
+    }
+  });
+
+  const edgesByKey = new Map();
+  rawGraph.edges.forEach((edge) => {
+    const nextEdge = {
+      ...edge,
+      origem_id: remapNodeId(edge.origem_id),
+      destino_id: remapNodeId(edge.destino_id)
+    };
+    if (nextEdge.origem_id === nextEdge.destino_id) {
+      return;
+    }
+    const key = edgeKey(nextEdge);
+    if (!edgesByKey.has(key)) {
+      edgesByKey.set(key, nextEdge);
+    }
+  });
+
+  return {
+    nodes: Array.from(nodesById.values()),
+    edges: Array.from(edgesByKey.values())
+  };
+}
+
 function neighborhood(graph, nodeId, degree) {
+  return neighborhoodFromSeeds(graph, [nodeId], degree);
+}
+
+function neighborhoodFromSeeds(graph, seedIds, degree) {
+  const validSeeds = seedIds.filter(Boolean);
+  if (!validSeeds.length) {
+    return graph;
+  }
   const adjacency = new Map();
   graph.edges.forEach((edge) => {
     if (!adjacency.has(edge.origem_id)) adjacency.set(edge.origem_id, new Set());
@@ -45,8 +136,8 @@ function neighborhood(graph, nodeId, degree) {
     adjacency.get(edge.origem_id).add(edge.destino_id);
     adjacency.get(edge.destino_id).add(edge.origem_id);
   });
-  const visited = new Set([nodeId]);
-  const queue = [{ id: nodeId, depth: 0 }];
+  const visited = new Set(validSeeds);
+  const queue = validSeeds.map((id) => ({ id, depth: 0 }));
   while (queue.length) {
     const current = queue.shift();
     if (current.depth >= degree) continue;
@@ -212,7 +303,7 @@ export default function App() {
 
   useEffect(() => {
     fetchGraph()
-      .then(setGraph)
+      .then((nextGraph) => setGraph(sanitizeGraph(nextGraph)))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -227,7 +318,7 @@ export default function App() {
       return;
     }
     fetchNode(selectedNode.id)
-      .then(setNodeDetail)
+      .then((nextNode) => setNodeDetail(sanitizeNode(nextNode)))
       .catch((err) => setError(err.message));
   }, [selectedNode]);
 
@@ -256,10 +347,14 @@ export default function App() {
       edges: [...filteredGraph.edges, ...indirectRelations]
     };
     const graphInScope = filters.hideDisconnectedFromCore ? connectedToCore(graphWithIndirect) : graphWithIndirect;
-    if (!selectedNode) {
+    if (selectedNode) {
+      return neighborhood(graphInScope, selectedNode.id, filters.degree);
+    }
+    const coreSeeds = coreSeedIds(graphInScope);
+    if (!coreSeeds.length) {
       return graphInScope;
     }
-    return neighborhood(graphInScope, selectedNode.id, filters.degree);
+    return neighborhoodFromSeeds(graphInScope, coreSeeds, filters.degree);
   }, [filteredGraph, filters.degree, filters.hideDisconnectedFromCore, indirectRelations, selectedNode]);
   const visibleNodeIds = useMemo(() => new Set(displayGraph.nodes.map((node) => node.id)), [displayGraph.nodes]);
   const visibleEdgeKeys = useMemo(() => new Set(displayGraph.edges.map((edge) => edgeKey(edge))), [displayGraph.edges]);
@@ -362,9 +457,9 @@ export default function App() {
                 <span className="graph-pill graph-pill--primary">
                   {activeNode ? `Foco em: ${nodeLabel(activeNode)}` : 'Visão geral do grafo'}
                 </span>
-                {activeNode ? (
-                  <span className="graph-pill">Grau {filters.degree}</span>
-                ) : null}
+                <span className="graph-pill">
+                  {activeNode ? `Grau ${filters.degree}` : `Grau ${filters.degree} a partir do core`}
+                </span>
                 {selectedEdge ? (
                   <span className="graph-pill">{activeEdgeLabel}</span>
                 ) : null}

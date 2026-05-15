@@ -10,7 +10,7 @@ const NODE_TYPE_LABELS = {
 };
 const FILTER_HELP = {
   nodeTypes: 'Exibe apenas os tipos de entidade marcados nesta lista.',
-  degree: 'Quando há um nó em foco, controla quantos saltos de distância aparecem no grafo.',
+  degree: 'Controla quantos saltos de distância aparecem no grafo. Sem nó em foco, usa o core Master/Vorcaro como referência.',
   edgeLabels: 'Mostra ou esconde os nomes curtos das arestas para reduzir poluição visual.',
   masterCore: 'Esconde grupos soltos e mantém apenas nós e arestas conectados, em qualquer grau, ao núcleo Master/Vorcaro.'
 };

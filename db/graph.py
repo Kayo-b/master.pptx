@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,7 @@ class GraphStore:
                 pass
         return self.db_path.exists()
 
+    @contextmanager
     def _connect(self):
         try:
             import kuzu
@@ -40,7 +42,12 @@ class GraphStore:
             raise RuntimeError("Dependencia ausente: instale kuzu para persistir o grafo.") from exc
         self._prepare_db_path()
         database = kuzu.Database(str(self.db_path))
-        return kuzu.Connection(database)
+        connection = kuzu.Connection(database)
+        try:
+            yield connection
+        finally:
+            connection.close()
+            database.close()
 
     def init_db(self) -> None:
         already_exists = self._prepare_db_path()
@@ -49,40 +56,40 @@ class GraphStore:
             return
         schema_path = REPO_ROOT / "db" / "schema.cypher"
         statements = [statement.strip() for statement in schema_path.read_text(encoding="utf-8").split(";") if statement.strip()]
-        connection = self._connect()
-        for statement in statements:
-            connection.execute(statement)
+        with self._connect() as connection:
+            for statement in statements:
+                connection.execute(statement)
         self._ensure_node_properties()
 
     def _ensure_node_properties(self) -> None:
-        connection = self._connect()
-        for node_type, schema in NODE_SCHEMAS.items():
-            for field in schema.fields:
-                if field == "id":
-                    continue
-                try:
-                    connection.execute(f"ALTER TABLE {node_type} ADD {field} STRING")
-                except RuntimeError as exc:
-                    if "already has property" in str(exc):
+        with self._connect() as connection:
+            for node_type, schema in NODE_SCHEMAS.items():
+                for field in schema.fields:
+                    if field == "id":
                         continue
-                    raise
+                    try:
+                        connection.execute(f"ALTER TABLE {node_type} ADD {field} STRING")
+                    except RuntimeError as exc:
+                        if "already has property" in str(exc):
+                            continue
+                        raise
 
     def _fetch_rows(self, query: str, parameters: dict[str, Any] | None = None) -> list[list[Any]]:
         self.init_db()
-        connection = self._connect()
-        result = connection.execute(query, parameters) if parameters is not None else connection.execute(query)
-        rows: list[list[Any]] = []
-        while result.has_next():
-            rows.append(result.get_next())
+        with self._connect() as connection:
+            result = connection.execute(query, parameters) if parameters is not None else connection.execute(query)
+            rows: list[list[Any]] = []
+            while result.has_next():
+                rows.append(result.get_next())
         return rows
 
     def _execute(self, query: str, parameters: dict[str, Any] | None = None) -> None:
         self.init_db()
-        connection = self._connect()
-        if parameters is not None:
-            connection.execute(query, parameters)
-        else:
-            connection.execute(query)
+        with self._connect() as connection:
+            if parameters is not None:
+                connection.execute(query, parameters)
+            else:
+                connection.execute(query)
 
     def upsert_nodes(self, nodes: list[dict[str, Any]]) -> None:
         for node in nodes:
