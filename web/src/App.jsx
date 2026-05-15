@@ -7,12 +7,34 @@ import SourceList from './components/SourceList.jsx';
 import { fetchGraph, fetchNode } from './api.js';
 import { describeEdge, edgeKey, edgeShortLabel, nodeLabel, normalizeForSearch } from './graphLabels.js';
 
-const ALL_CONFIDENCES = ['confirmado', 'investigado', 'especulado'];
 const ALL_NODE_TYPES = ['Pessoa', 'Organizacao', 'Orgao', 'Partido', 'Evento', 'InstrumentoFinanceiro', 'Bem'];
 const CORE_TERMS = ['master', 'vorcaro'];
+const GRAPH_POSITIONS_STORAGE_KEY = 'master-graph-positions';
 
-function edgeMatches(edge, confidences) {
-  return confidences.has(edge.confianca);
+function isValidPosition(position) {
+  return (
+    position &&
+    typeof position === 'object' &&
+    Number.isFinite(position.x) &&
+    Number.isFinite(position.y)
+  );
+}
+
+function readStoredPositions() {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(GRAPH_POSITIONS_STORAGE_KEY) || '{}');
+    if (!parsed || typeof parsed !== 'object') {
+      return {};
+    }
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, position]) => isValidPosition(position))
+    );
+  } catch {
+    return {};
+  }
 }
 
 function neighborhood(graph, nodeId, degree) {
@@ -180,9 +202,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [graphPositions, setGraphPositions] = useState({});
+  const [graphPositions, setGraphPositions] = useState(() => readStoredPositions());
   const [filters, setFilters] = useState({
-    confidences: new Set(ALL_CONFIDENCES),
     nodeTypes: new Set(ALL_NODE_TYPES),
     degree: 1,
     showEdgeLabels: true,
@@ -195,6 +216,10 @@ export default function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(GRAPH_POSITIONS_STORAGE_KEY, JSON.stringify(graphPositions));
+  }, [graphPositions]);
 
   useEffect(() => {
     if (!selectedNode) {
@@ -212,8 +237,7 @@ export default function App() {
     const visibleEdges = graph.edges.filter(
       (edge) =>
         visibleNodeIds.has(edge.origem_id) &&
-        visibleNodeIds.has(edge.destino_id) &&
-        edgeMatches(edge, filters.confidences)
+        visibleNodeIds.has(edge.destino_id)
     );
     return {
       nodes: visibleNodes,

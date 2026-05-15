@@ -1,11 +1,5 @@
 import { describeEdge } from '../graphLabels.js';
 
-const CONFIDENCE_LABELS = {
-  confirmado: 'Confirmado',
-  investigado: 'Investigado',
-  especulado: 'Especulado'
-};
-
 export default function SourceList({ edge, nodesById }) {
   return (
     <details className="panel collapsible-panel selected-edge-panel" open>
@@ -18,7 +12,6 @@ export default function SourceList({ edge, nodesById }) {
         ) : (
           <>
             <p><strong>{describeEdge(edge, nodesById)}</strong></p>
-            <p>Confiança: {CONFIDENCE_LABELS[edge.confianca] || edge.confianca}</p>
             <h3>Fontes</h3>
             <ul className="relation-list">
               {(edge.fontes || []).map((source) => (

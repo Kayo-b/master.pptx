@@ -56,18 +56,6 @@ const EDGE_COLORS = {
   CITADO_EM: '#a78bfa'
 };
 
-export const EDGE_CONFIDENCE_STYLES = {
-  confirmado: 'solid',
-  investigado: 'dashed',
-  especulado: 'dotted'
-};
-
-export const EDGE_CONFIDENCE_LABELS = {
-  confirmado: 'Linha contínua = confirmado',
-  investigado: 'Linha tracejada = investigado',
-  especulado: 'Linha pontilhada = especulado'
-};
-
 const RELATION_PHRASES = {
   CONTROLA: {
     outgoing: 'Controla',

@@ -1,10 +1,4 @@
-const ALL_CONFIDENCES = ['confirmado', 'investigado', 'especulado'];
 const ALL_NODE_TYPES = ['Pessoa', 'Organizacao', 'Orgao', 'Partido', 'Evento', 'InstrumentoFinanceiro', 'Bem'];
-const CONFIDENCE_LABELS = {
-  confirmado: 'Confirmado',
-  investigado: 'Investigado',
-  especulado: 'Especulado'
-};
 const NODE_TYPE_LABELS = {
   Pessoa: 'Pessoa',
   Organizacao: 'Organização',
@@ -15,7 +9,6 @@ const NODE_TYPE_LABELS = {
   Bem: 'Bem'
 };
 const FILTER_HELP = {
-  confidences: 'Mostra o nível de certeza atribuído a cada aresta: confirmado, investigado ou especulado.',
   nodeTypes: 'Exibe apenas os tipos de entidade marcados nesta lista.',
   degree: 'Quando há um nó em foco, controla quantos saltos de distância aparecem no grafo.',
   edgeLabels: 'Mostra ou esconde os nomes curtos das arestas para reduzir poluição visual.',
@@ -39,24 +32,6 @@ export default function Filters({ filters, setFilters }) {
         <span>Filtros</span>
       </summary>
       <div className="panel-body">
-        <div className="filter-group">
-          <h3>Confiança <span className="hint-badge" title={FILTER_HELP.confidences}>?</span></h3>
-          {ALL_CONFIDENCES.map((value) => (
-            <label key={value} className="checkbox-row">
-              <input
-                type="checkbox"
-                checked={filters.confidences.has(value)}
-                onChange={() =>
-                  setFilters((current) => ({
-                    ...current,
-                    confidences: toggleInSet(current.confidences, value)
-                  }))
-                }
-              />
-              {CONFIDENCE_LABELS[value] || value}
-            </label>
-          ))}
-        </div>
         <div className="filter-group">
           <h3>Tipo de nó <span className="hint-badge" title={FILTER_HELP.nodeTypes}>?</span></h3>
           {ALL_NODE_TYPES.map((value) => (

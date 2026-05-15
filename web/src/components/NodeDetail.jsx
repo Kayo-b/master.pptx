@@ -1,12 +1,6 @@
 import { describeRelation, edgeKey } from '../graphLabels.js';
 import { resolveMediaUrl } from '../api.js';
 
-const CONFIDENCE_LABELS = {
-  confirmado: 'Confirmado',
-  investigado: 'Investigado',
-  especulado: 'Especulado'
-};
-
 export default function NodeDetail({ node, nodesById, selectedEdgeKey, onSelectRelation }) {
   return (
     <details className="panel collapsible-panel" open>
@@ -38,7 +32,6 @@ export default function NodeDetail({ node, nodesById, selectedEdgeKey, onSelectR
                     onClick={() => onSelectRelation(relation)}
                   >
                     <span>{describeRelation(relation, node.id, nodesById)}</span>
-                    <small>{CONFIDENCE_LABELS[relation.confianca] || relation.confianca}</small>
                   </button>
                 </li>
               ))}

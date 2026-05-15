@@ -1,4 +1,4 @@
-import { EDGE_CONFIDENCE_LABELS, NODE_COLORS, edgeColor } from '../graphLabels.js';
+import { NODE_COLORS, edgeColor } from '../graphLabels.js';
 
 const NODE_LEGEND = [
   ['Pessoa', NODE_COLORS.Pessoa],
@@ -42,17 +42,6 @@ export default function Legend() {
             {EDGE_LEGEND.map(([label, color]) => (
               <li key={label} className="legend-row">
                 <span className="legend-line" style={{ backgroundColor: color }} />
-                <span>{label}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="filter-group">
-          <h3>Estilo das linhas</h3>
-          <ul className="legend-list">
-            {Object.entries(EDGE_CONFIDENCE_LABELS).map(([key, label]) => (
-              <li key={key} className="legend-row">
-                <span className={`legend-line legend-line--${key}`} />
                 <span>{label}</span>
               </li>
             ))}

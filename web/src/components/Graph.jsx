@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
-import { EDGE_CONFIDENCE_STYLES, NODE_COLORS, edgeArrowShape, edgeColor, edgeKey, edgeShortLabel } from '../graphLabels.js';
+import { NODE_COLORS, edgeArrowShape, edgeColor, edgeKey, edgeShortLabel } from '../graphLabels.js';
 import { resolveMediaUrl } from '../api.js';
 
 function toElements(graph, highlightedNodeIds, highlightedEdgeKeys, hasSearch, positions) {
@@ -28,8 +28,6 @@ function toElements(graph, highlightedNodeIds, highlightedEdgeKeys, hasSearch, p
       target: edge.destino_id,
       labelShort: edgeShortLabel(edge),
       tipo: edge.tipo_relacao,
-      confianca: edge.confianca,
-      lineStyle: EDGE_CONFIDENCE_STYLES[edge.confianca] || 'solid',
       lineColor: edgeColor(edge),
       arrowShape: edgeArrowShape(edge),
       raw: edge
@@ -57,11 +55,7 @@ export default function Graph({
   );
   const graphKey = useMemo(() => {
     const nodeIds = graph.nodes.map((node) => node.id).sort().join('|');
-    const edgeIds = graph.edges
-      .map((edge) => edgeKey(edge))
-      .sort()
-      .join('|');
-    return `${nodeIds}__${edgeIds}__${hasCompletePositions ? 'preset' : 'cose'}`;
+    return `${nodeIds}__${hasCompletePositions ? 'preset' : 'cose'}`;
   }, [graph, hasCompletePositions]);
   const layout = useMemo(() => ({
     name: hasCompletePositions ? 'preset' : 'cose',
@@ -170,7 +164,7 @@ export default function Graph({
           style: {
             label: showEdgeLabels ? 'data(labelShort)' : '',
             'curve-style': 'bezier',
-            'line-style': 'data(lineStyle)',
+            'line-style': 'solid',
             'line-color': 'data(lineColor)',
             'target-arrow-color': 'data(lineColor)',
             'target-arrow-shape': 'data(arrowShape)',
