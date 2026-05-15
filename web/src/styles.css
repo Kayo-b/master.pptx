@@ -2,6 +2,12 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
@@ -15,42 +21,52 @@ body {
   grid-template-columns: 360px 1fr;
   gap: 0;
   height: 100vh;
+  min-height: 0;
   overflow: hidden;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   min-width: 0;
+  min-height: 0;
   height: 100%;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  padding: 16px;
+  overflow: hidden;
+  align-self: stretch;
+  padding: 0;
   background: #090b11;
   border-right: 1px solid #161b26;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: #334155 #090b11;
 }
 
-.sidebar::-webkit-scrollbar {
+.sidebar__scroll {
+  display: block;
+  flex: 1;
+  gap: 12px;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+  padding: 16px;
+}
+
+.sidebar__scroll::-webkit-scrollbar {
   width: 12px;
 }
 
-.sidebar::-webkit-scrollbar-track {
-  background: #090b11;
+.sidebar__scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 999px;
-  border: 3px solid #090b11;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
+.sidebar__scroll::-webkit-scrollbar-thumb {
   background: #475569;
+  border-radius: 999px;
+}
+
+.sidebar__scroll::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 .content {
@@ -389,6 +405,11 @@ a:hover {
   .sidebar {
     height: auto;
     max-height: 45vh;
+  }
+
+  .sidebar__scroll {
+    height: auto;
+    max-height: calc(45vh - 32px);
   }
 
   .graph-toolbar {

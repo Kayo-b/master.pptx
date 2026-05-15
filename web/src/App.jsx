@@ -343,14 +343,16 @@ export default function App() {
   return (
     <main className="layout">
       <aside className="sidebar">
-        <NodeDetail
-          node={displayedNodeDetail}
-          nodesById={nodesById}
-          selectedEdgeKey={selectedEdge ? edgeKey(selectedEdge) : null}
-          onSelectRelation={setSelectedEdge}
-        />
-        <SourceList edge={selectedEdge} nodesById={nodesById} />
-        <Filters filters={filters} setFilters={setFilters} />
+        <div className="sidebar__scroll">
+          <NodeDetail
+            node={displayedNodeDetail}
+            nodesById={nodesById}
+            selectedEdgeKey={selectedEdge ? edgeKey(selectedEdge) : null}
+            onSelectRelation={setSelectedEdge}
+          />
+          <SourceList edge={selectedEdge} nodesById={nodesById} />
+          <Filters filters={filters} setFilters={setFilters} />
+        </div>
       </aside>
       <section className="content">
         <section className="graph-panel">
